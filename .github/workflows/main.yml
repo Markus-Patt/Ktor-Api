@@ -29,3 +29,13 @@ jobs:
       uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
       with:
         arguments: assemble
+    - name: start postgresql in docker
+      run: |
+        docker-compose -f dev-compose.yaml up -d
+        while ! echo -n > /dev/tcp/localhost/5432; do
+          echo waiting for postgres to start up; sleep 10
+        done
+    - name: test with Gradle
+      uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+      with:
+        arguments: test
