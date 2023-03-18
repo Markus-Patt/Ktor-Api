@@ -2,6 +2,8 @@ package at.stefangaller
 
 import at.stefangaller.data.Book
 import com.google.gson.GsonBuilder
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.cucumber.java8.En
 import io.ktor.http.*
 import io.ktor.server.testing.*
@@ -20,10 +22,12 @@ class  BooksSteps: En {
 
     init {
         Given("empty books database") {
-            // https://stackoverflow.com/questions/40981804/is-there-a-way-to-run-raw-sql-with-kotlins-exposed-library
-            Database.connect("jdbc:postgresql://localhost:5432/bookdb", user = "jr")
-            transaction {
-                TransactionManager.current().exec("TRUNCATE TABLE books;")
+            withTestApplication({ mainWithDeps() }) {
+                // with test app so that the db is initialized, and we can ensure the tables we want to truncate do exist.
+                // https://stackoverflow.com/questions/40981804/is-there-a-way-to-run-raw-sql-with-kotlins-exposed-library
+                transaction {
+                    TransactionManager.current().exec("TRUNCATE TABLE books;")
+                }
             }
         }
 
